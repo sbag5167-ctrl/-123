@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>AI Prompt Optimizer</title>
+    <style>
+        :root { --primary: #00e676; --bg: #121212; --card: #1e1e1e; }
+        body { font-family: 'Pretendard', sans-serif; background: var(--bg); color: #fff; display: flex; justify-content: center; padding: 20px; }
+        .container { width: 100%; max-width: 600px; background: var(--card); padding: 25px; border-radius: 20px; border: 1px solid #333; }
+        h2 { text-align: center; color: var(--primary); }
+        
+        .status-bar { margin: 20px 0; background: #333; height: 10px; border-radius: 5px; overflow: hidden; }
+        #progress { width: 0%; height: 100%; background: var(--primary); transition: 0.3s; }
+        
+        .info { display: flex; justify-content: space-between; font-size: 0.9rem; color: #888; margin-bottom: 10px; }
+        textarea { width: 100%; height: 180px; background: #2a2a2a; color: #fff; border: 1px solid #444; border-radius: 12px; padding: 15px; box-sizing: border-box; font-size: 1rem; line-height: 1.5; }
+        
+        .btn-group { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px; }
+        button { padding: 12px; border-radius: 8px; border: none; cursor: pointer; font-weight: bold; transition: 0.2s; }
+        .btn-clean { background: #333; color: white; border: 1px solid #555; }
+        .btn-clean:hover { background: #444; }
+        .btn-copy { background: var(--primary); color: #000; }
+        .btn-copy:hover { opacity: 0.9; }
+
+        .tag-count { color: var(--primary); font-weight: bold; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>Prompt Optimizer ⚡</h2>
+    
+    <div class="info">
+        <span>태그 개수: <span id="tagNum" class="tag-count">0</span>개</span>
+        <span>추정 토큰: <span id="tokenNum" class="tag-count">0</span> / 225</span>
+    </div>
+    
+    <div class="status-bar">
+        <div id="progress"></div>
+    </div>
+
+    <textarea id="mainInput" placeholder="프롬프트를 여기에 붙여넣으세요... 자동으로 중복을 체크하고 길이를 계산합니다." oninput="analyze()"></textarea>
+
+    <div class="btn-group">
+        <button class="btn-clean" onclick="cleanPrompt()">✨ 중복 태그 제거</button>
+        <button class="btn-copy" onclick="copyResult()">📋 결과 복사하기</button>
+    </div>
+</div>
+
+<script>
+    function analyze() {
+        const text = document.getElementById('mainInput').value;
+        const tags = text.split(',').map(t => t.trim()).filter(t => t !== "");
+        
+        // 태그 개수 업데이트
+        document.getElementById('tagNum').innerText = tags.length;
+        
+        // 대략적인 토큰 계산 (NAI/SD 기준 콤마 포함 대략적 수치)
+        const tokenEstimate = Math.ceil(text.length / 3.5) + (tags.length * 0.5);
+        document.getElementById('tokenNum').innerText = Math.round(tokenEstimate);
+        
+        // 게이지 업데이트 (보통 225토큰이 한계선)
+        const percent = Math.min((tokenEstimate / 225) * 100, 100);
+        document.getElementById('progress').style.width = percent + "%";
+        document.getElementById('progress').style.background = percent > 80 ? "#ff5252" : "#00e676";
+    }
+
+    function cleanPrompt() {
+        const text = document.getElementById('mainInput').value;
+        const tags = text.split(',').map(t => t.trim()).filter(t => t !== "");
+        
+        // Set 자료형으로 중복 제거
+        const uniqueTags = [...new Set(tags)];
+        
+        document.getElementById('mainInput').value = uniqueTags.join(', ');
+        analyze();
+        alert("중복된 태그를 정리했습니다!");
+    }
+
+    function copyResult() {
+        const text = document.getElementById('mainInput').value;
+        navigator.clipboard.writeText(text);
+        alert("클립보드에 복사되었습니다!");
+    }
+</script>
+
+</body>
+</html>
